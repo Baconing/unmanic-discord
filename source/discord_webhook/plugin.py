@@ -11,7 +11,7 @@ class Settings(PluginSettings):
     }
 
 def on_worker_process(data):
-    settings = Settings(library_id=data.get['library_id'])
+    settings = Settings(library_id=data['library_id'])
 
     webhookUrl = settings.get("Webhook URL")
     absolutePaths = settings.get("Display Absolute Paths?")
