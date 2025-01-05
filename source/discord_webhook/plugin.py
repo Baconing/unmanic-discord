@@ -43,7 +43,7 @@ def on_worker_process(data):
     }
 
     requests.post(webhookUrl, body)
-    return
+    return data
 
 def on_postprocessor_task_results(data):
     settings = Settings(library_id=data['library_id'])
@@ -109,4 +109,4 @@ def on_postprocessor_task_results(data):
         }
 
     requests.post(webhookUrl, body)
-    return
+    return data
