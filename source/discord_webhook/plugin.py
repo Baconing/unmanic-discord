@@ -13,11 +13,11 @@ class Settings(PluginSettings):
 def on_worker_process(data):
     settings = Settings(library_id=data['library_id'])
 
-    webhookUrl = settings.get("Webhook URL")
-    absolutePaths = settings.get("Display Absolute Paths?")
-    pingEveryone = settings.get("Ping Everyone?")
-    username = settings.get("Webhook Username")
-    avatarUrl = settings.get("Webhook Avatar URL")
+    webhookUrl = settings.get_setting("Webhook URL")
+    absolutePaths = settings.get_setting("Display Absolute Paths?")
+    pingEveryone = settings.get_setting("Ping Everyone?")
+    username = settings.get_setting("Webhook Username")
+    avatarUrl = settings.get_setting("Webhook Avatar URL")
 
     file = data["file_in"] if absolutePaths else data["file_in"].split("/")[-1]
 
@@ -47,11 +47,11 @@ def on_worker_process(data):
 def on_postprocessor_task_results(data):
     settings = Settings(library_id=data['library_id'])
 
-    webhookUrl = settings.get("Webhook URL")
-    absolutePaths = settings.get("Display Absolute Paths?")
-    pingEveryone = settings.get("Ping Everyone?")
-    username = settings.get("Webhook Username")
-    avatarUrl = settings.get("Webhook Avatar URL")
+    webhookUrl = settings.get_setting("Webhook URL")
+    absolutePaths = settings.get_setting("Display Absolute Paths?")
+    pingEveryone = settings.get_setting("Ping Everyone?")
+    username = settings.get_setting("Webhook Username")
+    avatarUrl = settings.get_setting("Webhook Avatar URL")
 
     destination_files = ''.join(file if absolutePaths else file.split("/")[-1] for file in data["destination_files"])
     source_file = data["source_data"]["abspath"] if absolutePaths else data["source_data"]["basename"]
