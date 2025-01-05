@@ -24,12 +24,11 @@ def on_worker_process(data):
     body = {
         "content": "@everyone" if pingEveryone else None,
         "username": username if len(username) > 0 else None,
-        "avatar_url": avatar_url if len(avatar_url) > 0 else None,
+        "avatar_url": avatarUrl if len(avatarUrl) > 0 else None,
         "embeds": [
             {
                 "title": "Task Started",
-                "description": "A file processing task has begun."
-                "type": "rich",
+                "description": "A file processing task has begun.",
                 "color": 0xFFFF00,
                 "fields": [
                     {
@@ -61,18 +60,18 @@ def on_postprocessor_task_results(data):
         body = {
             "content": "@everyone" if pingEveryone else None,
             "username": username if len(username) > 0 else None,
-            "avatar_url": avatar_url if len(avatar_url) > 0 else None,
+            "avatar_url": avatarUrl if len(avatarUrl) > 0 else None,
             "embeds": [
                 {
                     "title": "Task Completed",
-                    "description": "A file processing task successfully completed."
-                    "type": "rich",
+                    "description": "A file processing task successfully completed.",
                     "color": 0x00FF00,
                     "fields": [
                         {
                             "name": "File(s) Created",
-                            "value": "```{}```".format(destination_files if len(destination_files) > 0 else "None")
-                        }
+                            "value": "```{}```".format(destination_files if len(destination_files) > 0 else "None"),
+                            "inline": False
+                        },
                         {
                             "name": "Original (Source) File",
                             "value": "```{}```".format(source_file),
@@ -86,18 +85,17 @@ def on_postprocessor_task_results(data):
         body = {
             "content": "@everyone" if pingEveryone else None,
             "username": username if len(username) > 0 else None,
-            "avatar_url": avatar_url if len(avatar_url) > 0 else None,
+            "avatar_url": avatarUrl if len(avatarUrl) > 0 else None,
             "embeds": [
                 {
                     "title": "Task Failed",
-                    "description": "A file processing task failed during {}.".format("processing" if data["task_processing_success"] else "file movement")
-                    "type": "rich",
+                    "description": "A file processing task failed during {}.".format("processing" if data["task_processing_success"] else "file movement"),
                     "color": 0xFF0000,
                     "fields": [
                         {
                             "name": "File(s) Created",
                             "value": "```{}```".format(destination_files if len(destination_files) > 0 else "None")
-                        }
+                        },
                         {
                             "name": "Original (Source) File",
                             "value": "```{}```".format(source_file),
