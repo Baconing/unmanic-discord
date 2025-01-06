@@ -1,5 +1,8 @@
 import requests
+import logging
 from unmanic.libs.unplugins.settings import PluginSettings
+
+logger = logging.getLogger("Unmanic.Plugin.discord_webhook")
 
 class Settings(PluginSettings):
     settings = {
@@ -11,6 +14,7 @@ class Settings(PluginSettings):
     }
 
 def on_worker_process(data):
+    logger.info("Sending notification to webhook for a started task.")
     settings = Settings(library_id=data['library_id'])
 
     webhookUrl = settings.get_setting("Webhook URL")
@@ -41,7 +45,10 @@ def on_worker_process(data):
         ]
     }
 
-    requests.post(webhookUrl, body)
+    resp = requests.post(webhookUrl, body)
+    if not resp.ok:
+        logger.error("Got a bad response (%d) from Discord: %s", resp.json())
+
     return data
 
 def on_postprocessor_task_results(data):
@@ -106,5 +113,8 @@ def on_postprocessor_task_results(data):
             ]
         }
 
-    requests.post(webhookUrl, body)
+    resp = requests.post(webhookUrl, body)
+    if not resp.ok:
+        logger.error("Got a bad response (%d) from Discord: %s", resp.json())
+
     return data
