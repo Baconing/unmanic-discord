@@ -1,5 +1,5 @@
-import requests
 import logging
+from discord_webhook import DiscordEmbed, DiscordWebhook
 from unmanic.libs.unplugins.settings import PluginSettings
 
 logger = logging.getLogger("Unmanic.Plugin.discord_webhook")
@@ -25,29 +25,22 @@ def on_worker_process(data):
 
     file = data["file_in"] if absolutePaths else data["file_in"].split("/")[-1]
 
-    body = {
-        "content": "@everyone" if pingEveryone else None,
-        "username": username if len(username) > 0 else None,
-        "avatar_url": avatarUrl if len(avatarUrl) > 0 else None,
-        "embeds": [
-            {
-                "title": "Task Started",
-                "description": "A file processing task has begun.",
-                "color": 0xFFFF00,
-                "fields": [
-                    {
-                        "name": "File",
-                        "value": "```{}```".format(file),
-                        "inline": False
-                    },
-                ]
-            }
-        ]
-    }
+    msg = DiscordWebhook(webhookUrl)
+    msg.content = "@everyone" if pingEveryone else None
+    msg.username = username if len(username) > 0 else None
+    msg.avatar_url = avatarUrl if len(avatarUrl) > 0 else None
+    
+    embed = DiscordEmbed("Task Started", "A file processing task has begun.")
+    embed.set_color(0xFFFF00)
+    embed.add_embed_field("File", "```{}```".format(file), False)
 
-    resp = requests.post(webhookUrl, body)
+    msg.add_embed(embed)
+
+    resp = msg.execute()
     if not resp.ok:
-        logger.error("Got a bad response (%d) from Discord: %s", resp.json())
+        logger.error("Got failed status code %d from Discord: %s", resp.status_code, resp.json())
+        resp.raise_for_status()
+
 
     return data
 
@@ -63,58 +56,26 @@ def on_postprocessor_task_results(data):
     destination_files = ''.join(file if absolutePaths else file.split("/")[-1] for file in data["destination_files"])
     source_file = data["source_data"]["abspath"] if absolutePaths else data["source_data"]["basename"]
 
+    msg = DiscordWebhook(webhookUrl)
+    msg.content = "@everyone" if pingEveryone else None
+    msg.username = username if len(username) > 0 else None
+    msg.avatar_url = avatarUrl if len(avatarUrl) > 0 else None
+    
     if (data["task_processing_success"] and data["file_move_processes_success"]):
-        body = {
-            "content": "@everyone" if pingEveryone else None,
-            "username": username if len(username) > 0 else None,
-            "avatar_url": avatarUrl if len(avatarUrl) > 0 else None,
-            "embeds": [
-                {
-                    "title": "Task Completed",
-                    "description": "A file processing task successfully completed.",
-                    "color": 0x00FF00,
-                    "fields": [
-                        {
-                            "name": "File(s) Created",
-                            "value": "```{}```".format(destination_files if len(destination_files) > 0 else "None"),
-                            "inline": False
-                        },
-                        {
-                            "name": "Original (Source) File",
-                            "value": "```{}```".format(source_file),
-                            "inline": False
-                        },
-                    ]
-                }
-            ]
-        }
+        embed = DiscordEmbed("Task Completed", "A file processing task successfully completed.")
+        embed.set_color(0x00FF00)
     else:
-        body = {
-            "content": "@everyone" if pingEveryone else None,
-            "username": username if len(username) > 0 else None,
-            "avatar_url": avatarUrl if len(avatarUrl) > 0 else None,
-            "embeds": [
-                {
-                    "title": "Task Failed",
-                    "description": "A file processing task failed during {}.".format("processing" if data["task_processing_success"] else "file movement"),
-                    "color": 0xFF0000,
-                    "fields": [
-                        {
-                            "name": "File(s) Created",
-                            "value": "```{}```".format(destination_files if len(destination_files) > 0 else "None")
-                        },
-                        {
-                            "name": "Original (Source) File",
-                            "value": "```{}```".format(source_file),
-                            "inline": False
-                        },
-                    ]
-                }
-            ]
-        }
+        embed = DiscordEmbed("Task Failed", "A file processing task failed during {}.".format("processing" if data["task_processing_success"] else "file movement"))
+        embed.set_color(0xFF0000)
 
-    resp = requests.post(webhookUrl, body)
+    embed.add_embed_field("File(s) Created", "```{}```".format(destination_files if len(destination_files) > 0 else "None"), False)
+    embed.add_embed_field("Original (Source) File", "```{}```".format(source_file), False)
+
+    msg.add_embed(embed)
+
+    resp = msg.execute()
     if not resp.ok:
-        logger.error("Got a bad response (%d) from Discord: %s", resp.json())
+        logger.error("Got failed status code %d from Discord: %s", resp.status_code, resp.json())
+        resp.raise_for_status()
 
     return data
